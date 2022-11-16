@@ -2,11 +2,11 @@ package main
 
 import (
 	"flag"
+	"fmt"
 	"log"
 
-	"github.com/adamjhr/ds2-handin-5/auction"
-
 	"google.golang.org/grpc"
+	"google.golang.org/grpc/credentials/insecure"
 )
 
 var (
@@ -18,20 +18,15 @@ func main() {
 	flag.Parse()
 	replicaPorts := flag.Args()
 	// Creat a virtual RPC Client Connection on port  9080 WithInsecure (because  of http)
-	for i, _ := range replicaPorts {
+	for _, p := range replicaPorts {
 		var conn *grpc.ClientConn
-		conn, err := grpc.Dial(":9080", grpc.WithInsecure())
-		defer conn.Close()
+		conn, err := grpc.Dial(fmt.Sprintf(":%v", p), grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
 			log.Fatalf("Could not connect: %s", err)
 		}
-		replicas[i] = conn
+		defer conn.Close()
+		replicas = append(replicas, conn)
 	}
-
-	// Defer means: When this function returns, call this method (meaing, one main is done, close connection)
-
-	//  Create new Client from generated gRPC code from proto
-	c := auction.TemplateClient(conn)
 
 	for {
 
