@@ -1,0 +1,39 @@
+syntax = "proto3";
+
+option go_package = "https://github.com/adamjhr/ds2-handin-5;auction";
+
+package proto;
+// protoc --go_out=. --go_opt=paths=source_relative --go-grpc_out=. --go-grpc_opt=paths=source_relative proto/proto.proto
+
+service Template
+{
+    // send message
+    rpc Bid (BidRequest) returns (Ack);
+
+    rpc Result (ResultRequest) returns (ResultReply);
+}
+
+message BidRequest {
+    int32 id = 1;
+    int32 amount = 2;
+}
+
+message Ack {
+    Outcome outcome = 1;
+}
+
+enum Outcome {
+    Success = 0;
+    Fail = 1;
+    Exception = 2;
+}
+
+message ResultRequest {
+    int32 id = 1;
+}
+
+message ResultReply {
+    int32 id = 1;
+    int32 amount = 2;
+    bool isFinished = 3;
+}
