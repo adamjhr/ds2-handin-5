@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"flag"
 	"fmt"
 	"log"
@@ -16,7 +17,7 @@ var (
 )
 
 type Server struct {
-	auction.UnimplementedTemplateServer
+	auction.FrontendToServerServer
 }
 
 func main() {
@@ -26,12 +27,24 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
+	log.Println("Listenered Initialised")
 
 	grpcServer := grpc.NewServer()
+	log.Println("Server declared")
 
-	auction.RegisterTemplateServer(grpcServer, &Server{})
+	auction.RegisterFrontendToServerServer(grpcServer, &Server{})
+	log.Println("Server registered")
 
 	grpcServer.Serve(lis)
+	log.Println("Server initialised")
 }
 
 // ------------ MESSAGES ------------ \\
+
+func (c *Server) FrontendBid(ctx context.Context, in *auction.FrontendBidRequest) (*auction.FrontendAck, error) {
+	log.Println("Bid Request Recieved")
+	log.Println(in.Id)
+	log.Println(in.Count)
+	log.Println(in.Amount)
+	return nil, nil
+}

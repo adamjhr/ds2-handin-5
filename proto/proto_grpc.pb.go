@@ -14,124 +14,248 @@ import (
 // Requires gRPC-Go v1.32.0 or later.
 const _ = grpc.SupportPackageIsVersion7
 
-// TemplateClient is the client API for Template service.
+// FrontendToServerClient is the client API for FrontendToServer service.
 //
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
-type TemplateClient interface {
+type FrontendToServerClient interface {
 	// send message
-	Bid(ctx context.Context, in *BidRequest, opts ...grpc.CallOption) (*Ack, error)
-	Result(ctx context.Context, in *ResultRequest, opts ...grpc.CallOption) (*ResultReply, error)
+	FrontendBid(ctx context.Context, in *FrontendBidRequest, opts ...grpc.CallOption) (*FrontendAck, error)
+	FrontendResult(ctx context.Context, in *FrontendResultRequest, opts ...grpc.CallOption) (*FrontendResultReply, error)
 }
 
-type templateClient struct {
+type frontendToServerClient struct {
 	cc grpc.ClientConnInterface
 }
 
-func NewTemplateClient(cc grpc.ClientConnInterface) TemplateClient {
-	return &templateClient{cc}
+func NewFrontendToServerClient(cc grpc.ClientConnInterface) FrontendToServerClient {
+	return &frontendToServerClient{cc}
 }
 
-func (c *templateClient) Bid(ctx context.Context, in *BidRequest, opts ...grpc.CallOption) (*Ack, error) {
-	out := new(Ack)
-	err := c.cc.Invoke(ctx, "/proto.Template/Bid", in, out, opts...)
+func (c *frontendToServerClient) FrontendBid(ctx context.Context, in *FrontendBidRequest, opts ...grpc.CallOption) (*FrontendAck, error) {
+	out := new(FrontendAck)
+	err := c.cc.Invoke(ctx, "/proto.FrontendToServer/FrontendBid", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-func (c *templateClient) Result(ctx context.Context, in *ResultRequest, opts ...grpc.CallOption) (*ResultReply, error) {
-	out := new(ResultReply)
-	err := c.cc.Invoke(ctx, "/proto.Template/Result", in, out, opts...)
+func (c *frontendToServerClient) FrontendResult(ctx context.Context, in *FrontendResultRequest, opts ...grpc.CallOption) (*FrontendResultReply, error) {
+	out := new(FrontendResultReply)
+	err := c.cc.Invoke(ctx, "/proto.FrontendToServer/FrontendResult", in, out, opts...)
 	if err != nil {
 		return nil, err
 	}
 	return out, nil
 }
 
-// TemplateServer is the server API for Template service.
-// All implementations must embed UnimplementedTemplateServer
+// FrontendToServerServer is the server API for FrontendToServer service.
+// All implementations must embed UnimplementedFrontendToServerServer
 // for forward compatibility
-type TemplateServer interface {
+type FrontendToServerServer interface {
 	// send message
-	Bid(context.Context, *BidRequest) (*Ack, error)
-	Result(context.Context, *ResultRequest) (*ResultReply, error)
-	mustEmbedUnimplementedTemplateServer()
+	FrontendBid(context.Context, *FrontendBidRequest) (*FrontendAck, error)
+	FrontendResult(context.Context, *FrontendResultRequest) (*FrontendResultReply, error)
+	mustEmbedUnimplementedFrontendToServerServer()
 }
 
-// UnimplementedTemplateServer must be embedded to have forward compatible implementations.
-type UnimplementedTemplateServer struct {
+// UnimplementedFrontendToServerServer must be embedded to have forward compatible implementations.
+type UnimplementedFrontendToServerServer struct {
 }
 
-func (UnimplementedTemplateServer) Bid(context.Context, *BidRequest) (*Ack, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Bid not implemented")
+func (UnimplementedFrontendToServerServer) FrontendBid(context.Context, *FrontendBidRequest) (*FrontendAck, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FrontendBid not implemented")
 }
-func (UnimplementedTemplateServer) Result(context.Context, *ResultRequest) (*ResultReply, error) {
-	return nil, status.Errorf(codes.Unimplemented, "method Result not implemented")
+func (UnimplementedFrontendToServerServer) FrontendResult(context.Context, *FrontendResultRequest) (*FrontendResultReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FrontendResult not implemented")
 }
-func (UnimplementedTemplateServer) mustEmbedUnimplementedTemplateServer() {}
+func (UnimplementedFrontendToServerServer) mustEmbedUnimplementedFrontendToServerServer() {}
 
-// UnsafeTemplateServer may be embedded to opt out of forward compatibility for this service.
-// Use of this interface is not recommended, as added methods to TemplateServer will
+// UnsafeFrontendToServerServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to FrontendToServerServer will
 // result in compilation errors.
-type UnsafeTemplateServer interface {
-	mustEmbedUnimplementedTemplateServer()
+type UnsafeFrontendToServerServer interface {
+	mustEmbedUnimplementedFrontendToServerServer()
 }
 
-func RegisterTemplateServer(s grpc.ServiceRegistrar, srv TemplateServer) {
-	s.RegisterService(&Template_ServiceDesc, srv)
+func RegisterFrontendToServerServer(s grpc.ServiceRegistrar, srv FrontendToServerServer) {
+	s.RegisterService(&FrontendToServer_ServiceDesc, srv)
 }
 
-func _Template_Bid_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+func _FrontendToServer_FrontendBid_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FrontendBidRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FrontendToServerServer).FrontendBid(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.FrontendToServer/FrontendBid",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FrontendToServerServer).FrontendBid(ctx, req.(*FrontendBidRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+func _FrontendToServer_FrontendResult_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FrontendResultRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FrontendToServerServer).FrontendResult(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.FrontendToServer/FrontendResult",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FrontendToServerServer).FrontendResult(ctx, req.(*FrontendResultRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
+// FrontendToServer_ServiceDesc is the grpc.ServiceDesc for FrontendToServer service.
+// It's only intended for direct use with grpc.RegisterService,
+// and not to be introspected or modified (even as a copy)
+var FrontendToServer_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "proto.FrontendToServer",
+	HandlerType: (*FrontendToServerServer)(nil),
+	Methods: []grpc.MethodDesc{
+		{
+			MethodName: "FrontendBid",
+			Handler:    _FrontendToServer_FrontendBid_Handler,
+		},
+		{
+			MethodName: "FrontendResult",
+			Handler:    _FrontendToServer_FrontendResult_Handler,
+		},
+	},
+	Streams:  []grpc.StreamDesc{},
+	Metadata: "proto/proto.proto",
+}
+
+// ClientToFrontendClient is the client API for ClientToFrontend service.
+//
+// For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
+type ClientToFrontendClient interface {
+	// send message
+	ClientBid(ctx context.Context, in *BidRequest, opts ...grpc.CallOption) (*Ack, error)
+	ClientResult(ctx context.Context, in *ClientResultRequest, opts ...grpc.CallOption) (*ClientResultReply, error)
+}
+
+type clientToFrontendClient struct {
+	cc grpc.ClientConnInterface
+}
+
+func NewClientToFrontendClient(cc grpc.ClientConnInterface) ClientToFrontendClient {
+	return &clientToFrontendClient{cc}
+}
+
+func (c *clientToFrontendClient) ClientBid(ctx context.Context, in *BidRequest, opts ...grpc.CallOption) (*Ack, error) {
+	out := new(Ack)
+	err := c.cc.Invoke(ctx, "/proto.ClientToFrontend/ClientBid", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+func (c *clientToFrontendClient) ClientResult(ctx context.Context, in *ClientResultRequest, opts ...grpc.CallOption) (*ClientResultReply, error) {
+	out := new(ClientResultReply)
+	err := c.cc.Invoke(ctx, "/proto.ClientToFrontend/ClientResult", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
+// ClientToFrontendServer is the server API for ClientToFrontend service.
+// All implementations must embed UnimplementedClientToFrontendServer
+// for forward compatibility
+type ClientToFrontendServer interface {
+	// send message
+	ClientBid(context.Context, *BidRequest) (*Ack, error)
+	ClientResult(context.Context, *ClientResultRequest) (*ClientResultReply, error)
+	mustEmbedUnimplementedClientToFrontendServer()
+}
+
+// UnimplementedClientToFrontendServer must be embedded to have forward compatible implementations.
+type UnimplementedClientToFrontendServer struct {
+}
+
+func (UnimplementedClientToFrontendServer) ClientBid(context.Context, *BidRequest) (*Ack, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ClientBid not implemented")
+}
+func (UnimplementedClientToFrontendServer) ClientResult(context.Context, *ClientResultRequest) (*ClientResultReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ClientResult not implemented")
+}
+func (UnimplementedClientToFrontendServer) mustEmbedUnimplementedClientToFrontendServer() {}
+
+// UnsafeClientToFrontendServer may be embedded to opt out of forward compatibility for this service.
+// Use of this interface is not recommended, as added methods to ClientToFrontendServer will
+// result in compilation errors.
+type UnsafeClientToFrontendServer interface {
+	mustEmbedUnimplementedClientToFrontendServer()
+}
+
+func RegisterClientToFrontendServer(s grpc.ServiceRegistrar, srv ClientToFrontendServer) {
+	s.RegisterService(&ClientToFrontend_ServiceDesc, srv)
+}
+
+func _ClientToFrontend_ClientBid_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
 	in := new(BidRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TemplateServer).Bid(ctx, in)
+		return srv.(ClientToFrontendServer).ClientBid(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Template/Bid",
+		FullMethod: "/proto.ClientToFrontend/ClientBid",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TemplateServer).Bid(ctx, req.(*BidRequest))
+		return srv.(ClientToFrontendServer).ClientBid(ctx, req.(*BidRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-func _Template_Result_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(ResultRequest)
+func _ClientToFrontend_ClientResult_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ClientResultRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
 	if interceptor == nil {
-		return srv.(TemplateServer).Result(ctx, in)
+		return srv.(ClientToFrontendServer).ClientResult(ctx, in)
 	}
 	info := &grpc.UnaryServerInfo{
 		Server:     srv,
-		FullMethod: "/proto.Template/Result",
+		FullMethod: "/proto.ClientToFrontend/ClientResult",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(TemplateServer).Result(ctx, req.(*ResultRequest))
+		return srv.(ClientToFrontendServer).ClientResult(ctx, req.(*ClientResultRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
 
-// Template_ServiceDesc is the grpc.ServiceDesc for Template service.
+// ClientToFrontend_ServiceDesc is the grpc.ServiceDesc for ClientToFrontend service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
-var Template_ServiceDesc = grpc.ServiceDesc{
-	ServiceName: "proto.Template",
-	HandlerType: (*TemplateServer)(nil),
+var ClientToFrontend_ServiceDesc = grpc.ServiceDesc{
+	ServiceName: "proto.ClientToFrontend",
+	HandlerType: (*ClientToFrontendServer)(nil),
 	Methods: []grpc.MethodDesc{
 		{
-			MethodName: "Bid",
-			Handler:    _Template_Bid_Handler,
+			MethodName: "ClientBid",
+			Handler:    _ClientToFrontend_ClientBid_Handler,
 		},
 		{
-			MethodName: "Result",
-			Handler:    _Template_Result_Handler,
+			MethodName: "ClientResult",
+			Handler:    _ClientToFrontend_ClientResult_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},
