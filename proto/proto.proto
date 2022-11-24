@@ -11,14 +11,18 @@ service FrontendToServer
     rpc FrontendBid (FrontendBidRequest) returns (FrontendAck);
 
     rpc FrontendResult (FrontendResultRequest) returns (FrontendResultReply);
+
+    rpc FrontendNewAuction (FrontendNewAuctionRequest) returns (FrontendNewAuctionReply);
 }
 
 service ClientToFrontend
 {
     // send message
-    rpc ClientBid (BidRequest) returns (Ack);
+    rpc ClientBid (ClientBidRequest) returns (ClientAck);
 
     rpc ClientResult (ClientResultRequest) returns (ClientResultReply);
+
+    rpc ClientNewAuction (ClientNewAuctionRequest) returns (ClientNewAuctionReply);
 }
 
 enum Outcome {
@@ -27,14 +31,15 @@ enum Outcome {
     Exception = 2;
 }
 
-message BidRequest {
+message FrontendNewAuctionRequest {
     int32 id = 1;
-    int32 amount = 2;
+    int32 count = 2;
 }
 
-message Ack {
+message FrontendNewAuctionReply {
     int32 id = 1;
-    Outcome outcome = 2;
+    int32 count = 2;
+    Outcome outcome = 3;
 }
 
 message FrontendBidRequest {
@@ -61,6 +66,15 @@ message FrontendResultReply {
     bool isFinished = 4;
 }
 
+message ClientNewAuctionRequest {
+    int32 id = 1;
+}
+
+message ClientNewAuctionReply {
+    int32 id = 1;
+    Outcome outcome = 2;
+}
+
 message ClientResultRequest {
     int32 id = 1;
 }
@@ -69,4 +83,14 @@ message ClientResultReply {
     int32 id = 1;
     int32 amount = 2;
     bool isFinished = 3;
+}
+
+message ClientBidRequest {
+    int32 id = 1;
+    int32 amount = 2;
+}
+
+message ClientAck {
+    int32 id = 1;
+    Outcome outcome = 2;
 }

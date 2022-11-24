@@ -21,6 +21,7 @@ type FrontendToServerClient interface {
 	// send message
 	FrontendBid(ctx context.Context, in *FrontendBidRequest, opts ...grpc.CallOption) (*FrontendAck, error)
 	FrontendResult(ctx context.Context, in *FrontendResultRequest, opts ...grpc.CallOption) (*FrontendResultReply, error)
+	FrontendNewAuction(ctx context.Context, in *FrontendNewAuctionRequest, opts ...grpc.CallOption) (*FrontendNewAuctionReply, error)
 }
 
 type frontendToServerClient struct {
@@ -49,6 +50,15 @@ func (c *frontendToServerClient) FrontendResult(ctx context.Context, in *Fronten
 	return out, nil
 }
 
+func (c *frontendToServerClient) FrontendNewAuction(ctx context.Context, in *FrontendNewAuctionRequest, opts ...grpc.CallOption) (*FrontendNewAuctionReply, error) {
+	out := new(FrontendNewAuctionReply)
+	err := c.cc.Invoke(ctx, "/proto.FrontendToServer/FrontendNewAuction", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // FrontendToServerServer is the server API for FrontendToServer service.
 // All implementations must embed UnimplementedFrontendToServerServer
 // for forward compatibility
@@ -56,6 +66,7 @@ type FrontendToServerServer interface {
 	// send message
 	FrontendBid(context.Context, *FrontendBidRequest) (*FrontendAck, error)
 	FrontendResult(context.Context, *FrontendResultRequest) (*FrontendResultReply, error)
+	FrontendNewAuction(context.Context, *FrontendNewAuctionRequest) (*FrontendNewAuctionReply, error)
 	mustEmbedUnimplementedFrontendToServerServer()
 }
 
@@ -68,6 +79,9 @@ func (UnimplementedFrontendToServerServer) FrontendBid(context.Context, *Fronten
 }
 func (UnimplementedFrontendToServerServer) FrontendResult(context.Context, *FrontendResultRequest) (*FrontendResultReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method FrontendResult not implemented")
+}
+func (UnimplementedFrontendToServerServer) FrontendNewAuction(context.Context, *FrontendNewAuctionRequest) (*FrontendNewAuctionReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method FrontendNewAuction not implemented")
 }
 func (UnimplementedFrontendToServerServer) mustEmbedUnimplementedFrontendToServerServer() {}
 
@@ -118,6 +132,24 @@ func _FrontendToServer_FrontendResult_Handler(srv interface{}, ctx context.Conte
 	return interceptor(ctx, in, info, handler)
 }
 
+func _FrontendToServer_FrontendNewAuction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(FrontendNewAuctionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(FrontendToServerServer).FrontendNewAuction(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.FrontendToServer/FrontendNewAuction",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(FrontendToServerServer).FrontendNewAuction(ctx, req.(*FrontendNewAuctionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // FrontendToServer_ServiceDesc is the grpc.ServiceDesc for FrontendToServer service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -133,6 +165,10 @@ var FrontendToServer_ServiceDesc = grpc.ServiceDesc{
 			MethodName: "FrontendResult",
 			Handler:    _FrontendToServer_FrontendResult_Handler,
 		},
+		{
+			MethodName: "FrontendNewAuction",
+			Handler:    _FrontendToServer_FrontendNewAuction_Handler,
+		},
 	},
 	Streams:  []grpc.StreamDesc{},
 	Metadata: "proto/proto.proto",
@@ -143,8 +179,9 @@ var FrontendToServer_ServiceDesc = grpc.ServiceDesc{
 // For semantics around ctx use and closing/ending streaming RPCs, please refer to https://pkg.go.dev/google.golang.org/grpc/?tab=doc#ClientConn.NewStream.
 type ClientToFrontendClient interface {
 	// send message
-	ClientBid(ctx context.Context, in *BidRequest, opts ...grpc.CallOption) (*Ack, error)
+	ClientBid(ctx context.Context, in *ClientBidRequest, opts ...grpc.CallOption) (*ClientAck, error)
 	ClientResult(ctx context.Context, in *ClientResultRequest, opts ...grpc.CallOption) (*ClientResultReply, error)
+	ClientNewAuction(ctx context.Context, in *ClientNewAuctionRequest, opts ...grpc.CallOption) (*ClientNewAuctionReply, error)
 }
 
 type clientToFrontendClient struct {
@@ -155,8 +192,8 @@ func NewClientToFrontendClient(cc grpc.ClientConnInterface) ClientToFrontendClie
 	return &clientToFrontendClient{cc}
 }
 
-func (c *clientToFrontendClient) ClientBid(ctx context.Context, in *BidRequest, opts ...grpc.CallOption) (*Ack, error) {
-	out := new(Ack)
+func (c *clientToFrontendClient) ClientBid(ctx context.Context, in *ClientBidRequest, opts ...grpc.CallOption) (*ClientAck, error) {
+	out := new(ClientAck)
 	err := c.cc.Invoke(ctx, "/proto.ClientToFrontend/ClientBid", in, out, opts...)
 	if err != nil {
 		return nil, err
@@ -173,13 +210,23 @@ func (c *clientToFrontendClient) ClientResult(ctx context.Context, in *ClientRes
 	return out, nil
 }
 
+func (c *clientToFrontendClient) ClientNewAuction(ctx context.Context, in *ClientNewAuctionRequest, opts ...grpc.CallOption) (*ClientNewAuctionReply, error) {
+	out := new(ClientNewAuctionReply)
+	err := c.cc.Invoke(ctx, "/proto.ClientToFrontend/ClientNewAuction", in, out, opts...)
+	if err != nil {
+		return nil, err
+	}
+	return out, nil
+}
+
 // ClientToFrontendServer is the server API for ClientToFrontend service.
 // All implementations must embed UnimplementedClientToFrontendServer
 // for forward compatibility
 type ClientToFrontendServer interface {
 	// send message
-	ClientBid(context.Context, *BidRequest) (*Ack, error)
+	ClientBid(context.Context, *ClientBidRequest) (*ClientAck, error)
 	ClientResult(context.Context, *ClientResultRequest) (*ClientResultReply, error)
+	ClientNewAuction(context.Context, *ClientNewAuctionRequest) (*ClientNewAuctionReply, error)
 	mustEmbedUnimplementedClientToFrontendServer()
 }
 
@@ -187,11 +234,14 @@ type ClientToFrontendServer interface {
 type UnimplementedClientToFrontendServer struct {
 }
 
-func (UnimplementedClientToFrontendServer) ClientBid(context.Context, *BidRequest) (*Ack, error) {
+func (UnimplementedClientToFrontendServer) ClientBid(context.Context, *ClientBidRequest) (*ClientAck, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ClientBid not implemented")
 }
 func (UnimplementedClientToFrontendServer) ClientResult(context.Context, *ClientResultRequest) (*ClientResultReply, error) {
 	return nil, status.Errorf(codes.Unimplemented, "method ClientResult not implemented")
+}
+func (UnimplementedClientToFrontendServer) ClientNewAuction(context.Context, *ClientNewAuctionRequest) (*ClientNewAuctionReply, error) {
+	return nil, status.Errorf(codes.Unimplemented, "method ClientNewAuction not implemented")
 }
 func (UnimplementedClientToFrontendServer) mustEmbedUnimplementedClientToFrontendServer() {}
 
@@ -207,7 +257,7 @@ func RegisterClientToFrontendServer(s grpc.ServiceRegistrar, srv ClientToFronten
 }
 
 func _ClientToFrontend_ClientBid_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
-	in := new(BidRequest)
+	in := new(ClientBidRequest)
 	if err := dec(in); err != nil {
 		return nil, err
 	}
@@ -219,7 +269,7 @@ func _ClientToFrontend_ClientBid_Handler(srv interface{}, ctx context.Context, d
 		FullMethod: "/proto.ClientToFrontend/ClientBid",
 	}
 	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
-		return srv.(ClientToFrontendServer).ClientBid(ctx, req.(*BidRequest))
+		return srv.(ClientToFrontendServer).ClientBid(ctx, req.(*ClientBidRequest))
 	}
 	return interceptor(ctx, in, info, handler)
 }
@@ -242,6 +292,24 @@ func _ClientToFrontend_ClientResult_Handler(srv interface{}, ctx context.Context
 	return interceptor(ctx, in, info, handler)
 }
 
+func _ClientToFrontend_ClientNewAuction_Handler(srv interface{}, ctx context.Context, dec func(interface{}) error, interceptor grpc.UnaryServerInterceptor) (interface{}, error) {
+	in := new(ClientNewAuctionRequest)
+	if err := dec(in); err != nil {
+		return nil, err
+	}
+	if interceptor == nil {
+		return srv.(ClientToFrontendServer).ClientNewAuction(ctx, in)
+	}
+	info := &grpc.UnaryServerInfo{
+		Server:     srv,
+		FullMethod: "/proto.ClientToFrontend/ClientNewAuction",
+	}
+	handler := func(ctx context.Context, req interface{}) (interface{}, error) {
+		return srv.(ClientToFrontendServer).ClientNewAuction(ctx, req.(*ClientNewAuctionRequest))
+	}
+	return interceptor(ctx, in, info, handler)
+}
+
 // ClientToFrontend_ServiceDesc is the grpc.ServiceDesc for ClientToFrontend service.
 // It's only intended for direct use with grpc.RegisterService,
 // and not to be introspected or modified (even as a copy)
@@ -256,6 +324,10 @@ var ClientToFrontend_ServiceDesc = grpc.ServiceDesc{
 		{
 			MethodName: "ClientResult",
 			Handler:    _ClientToFrontend_ClientResult_Handler,
+		},
+		{
+			MethodName: "ClientNewAuction",
+			Handler:    _ClientToFrontend_ClientNewAuction_Handler,
 		},
 	},
 	Streams:  []grpc.StreamDesc{},

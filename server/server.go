@@ -6,14 +6,17 @@ import (
 	"fmt"
 	"log"
 	"net"
+	"time"
 
 	auction "github.com/adamjhr/ds2-handin-5/proto"
-
 	"google.golang.org/grpc"
 )
 
 var (
-	port = flag.Int("port", 8000, "The port of this process")
+	port              = flag.Int("port", 8000, "The port of this process")
+	auctionRequest    = false
+	auctionIsFinished = true
+	highestBid        int
 )
 
 type Server struct {
@@ -27,7 +30,7 @@ func main() {
 	if err != nil {
 		log.Fatalf("failed to listen: %v", err)
 	}
-	log.Println("Listenered Initialised")
+	log.Println("Listener Initialised")
 
 	grpcServer := grpc.NewServer()
 	log.Println("Server declared")
@@ -35,16 +38,47 @@ func main() {
 	auction.RegisterFrontendToServerServer(grpcServer, &Server{})
 	log.Println("Server registered")
 
-	grpcServer.Serve(lis)
-	log.Println("Server initialised")
+	go func() {
+		if err := grpcServer.Serve(lis); err != nil {
+			log.Fatalf("failed to server %v", err)
+		}
+	}()
+	for {
+		if auctionRequest && auctionIsFinished {
+			NewAuction()
+			auctionRequest = false
+		}
+	}
 }
 
 // ------------ MESSAGES ------------ \\
 
+func (c *Server) FrontendNewAuction(ctx context.Context, in *auction.FrontendNewAuctionRequest) (*auction.FrontendNewAuctionReply, error) {
+	log.Println("New Auction Request Recieved")
+	auctionRequest = true
+	return &auction.FrontendNewAuctionReply{Id: in.Id, Count: in.Count, Outcome: auction.Outcome_Success}, nil
+}
+
 func (c *Server) FrontendBid(ctx context.Context, in *auction.FrontendBidRequest) (*auction.FrontendAck, error) {
 	log.Println("Bid Request Recieved")
-	log.Println(in.Id)
-	log.Println(in.Count)
-	log.Println(in.Amount)
-	return nil, nil
+	if in.Amount > int32(highestBid) && !auctionIsFinished {
+		highestBid = int(in.Amount)
+		return &auction.FrontendAck{Id: in.Id, Count: in.Count, Outcome: auction.Outcome_Success}, nil
+	} else {
+		return &auction.FrontendAck{Id: in.Id, Count: in.Count, Outcome: auction.Outcome_Fail}, nil
+	}
+}
+
+func (c *Server) FrontendResult(ctx context.Context, in *auction.FrontendResultRequest) (*auction.FrontendResultReply, error) {
+	log.Println("Result Request Recieved")
+	return &auction.FrontendResultReply{Id: in.Id, Count: in.Count, Amount: int32(highestBid), IsFinished: auctionIsFinished}, nil
+}
+
+func NewAuction() {
+	log.Println("New Auction Created")
+	auctionIsFinished = false
+	highestBid = 10
+	time.Sleep(time.Second * 30)
+	log.Println("Auction has Ended")
+	auctionIsFinished = true
 }
