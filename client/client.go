@@ -32,6 +32,13 @@ func main() {
 
 	defer conn.Close()
 
+	fmt.Println(" ------------------------------- ")
+	fmt.Println(" --- WELCOME TO THIS AUCTION --- ")
+	fmt.Println(" ------------------------------- ")
+	fmt.Println(" To make a bid, type 'bid <amount>'")
+	fmt.Println(" To see the results of the auction, type 'result'")
+	fmt.Println(" To start a new auction, type 'auction'")
+
 	scanner := bufio.NewScanner(os.Stdin)
 
 	for {
@@ -43,25 +50,25 @@ func main() {
 				if lineSplit[0] == "bid" {
 					bidAmount, errNum := strconv.Atoi(lineSplit[1])
 					if errNum != nil {
-						log.Fatal(errNum)
+						log.Println("Invalid bid amount")
 					}
 					reply, err := c.ClientBid(ctx, &auction.ClientBidRequest{Id: int32(*port), Amount: int32(bidAmount)})
 					if err != nil {
-						log.Fatal(err)
+						log.Println("Error: " + err.Error())
 					} else {
 						log.Printf("Bid was processed: %s", reply.Outcome.String())
 					}
 				} else if lineSplit[0] == "result" {
 					reply, err := c.ClientResult(ctx, &auction.ClientResultRequest{Id: int32(*port)})
 					if err != nil {
-						log.Fatal(err)
+						log.Println("Error: " + err.Error())
 					} else {
-						log.Printf("The current highest bid is %d, by bidder %d, IsFinished: %v", reply.Amount, reply.Id, reply.IsFinished)
+						log.Printf("The current highest bid is %d, by bidder %d, IsFinished: %v", reply.Amount, reply.Bidder, reply.IsFinished)
 					}
 				} else if lineSplit[0] == "auction" {
 					reply, err := c.ClientNewAuction(ctx, &auction.ClientNewAuctionRequest{Id: int32(*port)})
 					if err != nil {
-						log.Fatal(err)
+						log.Println("Error: " + err.Error())
 					} else {
 						log.Printf("Request was processed. %s", reply.Outcome.String())
 					}

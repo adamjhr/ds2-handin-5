@@ -107,7 +107,7 @@ func (c *Server) ClientResult(ctx context.Context, in *auction.ClientResultReque
 		go func(index int) {
 			ctx, cancel := context.WithCancel(context.Background())
 			var err error
-			serverResponse, err = replicaClients[index].FrontendResult(ctx, &auction.FrontendResultRequest{Id: int32(*port), Count: int32(count)})
+			serverResponse, err = replicaClients[index].FrontendResult(ctx, &auction.FrontendResultRequest{Id: in.Id, Count: int32(count)})
 			if err != nil {
 				log.Printf("Error sending message to server at port: %v", index)
 			}
@@ -117,7 +117,7 @@ func (c *Server) ClientResult(ctx context.Context, in *auction.ClientResultReque
 	for {
 		if serverResponse != nil {
 			log.Println(serverResponse.Id)
-			return &auction.ClientResultReply{Id: serverResponse.Id, Amount: serverResponse.Amount, IsFinished: serverResponse.IsFinished}, nil
+			return &auction.ClientResultReply{Id: serverResponse.Id, Amount: serverResponse.Amount, Bidder: serverResponse.Bidder, IsFinished: serverResponse.IsFinished}, nil
 		}
 	}
 }

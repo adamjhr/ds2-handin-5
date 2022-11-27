@@ -17,6 +17,7 @@ var (
 	auctionRequest    = false
 	auctionIsFinished = true
 	highestBid        int
+	highestBidder     int
 )
 
 type Server struct {
@@ -45,8 +46,9 @@ func main() {
 	}()
 	for {
 		if auctionRequest && auctionIsFinished {
-			NewAuction()
 			auctionRequest = false
+			time.Sleep(5 * time.Second)
+			NewAuction()
 		}
 	}
 }
@@ -55,6 +57,9 @@ func main() {
 
 func (c *Server) FrontendNewAuction(ctx context.Context, in *auction.FrontendNewAuctionRequest) (*auction.FrontendNewAuctionReply, error) {
 	log.Println("New Auction Request Recieved")
+	if auctionRequest {
+		return &auction.FrontendNewAuctionReply{Id: in.Id, Count: in.Count, Outcome: auction.Outcome_Fail}, nil
+	}
 	auctionRequest = true
 	return &auction.FrontendNewAuctionReply{Id: in.Id, Count: in.Count, Outcome: auction.Outcome_Success}, nil
 }
@@ -63,6 +68,10 @@ func (c *Server) FrontendBid(ctx context.Context, in *auction.FrontendBidRequest
 	log.Println("Bid Request Recieved")
 	if in.Amount > int32(highestBid) && !auctionIsFinished {
 		highestBid = int(in.Amount)
+		log.Println(highestBidder)
+		highestBidder = int(in.Id)
+		log.Println(highestBidder)
+		log.Println(int32(highestBidder))
 		return &auction.FrontendAck{Id: in.Id, Count: in.Count, Outcome: auction.Outcome_Success}, nil
 	} else {
 		return &auction.FrontendAck{Id: in.Id, Count: in.Count, Outcome: auction.Outcome_Fail}, nil
@@ -71,7 +80,7 @@ func (c *Server) FrontendBid(ctx context.Context, in *auction.FrontendBidRequest
 
 func (c *Server) FrontendResult(ctx context.Context, in *auction.FrontendResultRequest) (*auction.FrontendResultReply, error) {
 	log.Println("Result Request Recieved")
-	return &auction.FrontendResultReply{Id: in.Id, Count: in.Count, Amount: int32(highestBid), IsFinished: auctionIsFinished}, nil
+	return &auction.FrontendResultReply{Id: in.Id, Count: in.Count, Bidder: int32(highestBidder), Amount: int32(highestBid), IsFinished: auctionIsFinished}, nil
 }
 
 func NewAuction() {
