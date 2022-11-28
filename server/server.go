@@ -39,11 +39,13 @@ func main() {
 	auction.RegisterFrontendToServerServer(grpcServer, &Server{})
 	log.Println("Server registered")
 
+	// Serve the replica
 	go func() {
 		if err := grpcServer.Serve(lis); err != nil {
 			log.Fatalf("failed to server %v", err)
 		}
 	}()
+	// Listen for when a new auction should be started
 	for {
 		if auctionRequest && auctionIsFinished {
 			auctionRequest = false
@@ -66,6 +68,7 @@ func (c *Server) FrontendNewAuction(ctx context.Context, in *auction.FrontendNew
 
 func (c *Server) FrontendBid(ctx context.Context, in *auction.FrontendBidRequest) (*auction.FrontendAck, error) {
 	log.Println("Bid Request Recieved")
+	// Check the size of the bid and wether an auction is happening
 	if in.Amount > int32(highestBid) && !auctionIsFinished {
 		highestBid = int(in.Amount)
 		log.Println(highestBidder)

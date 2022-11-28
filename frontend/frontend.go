@@ -26,8 +26,10 @@ type Server struct {
 
 func main() {
 	flag.Parse()
+	// Each argument given when running frontend is assumed to be the port of a replica
 	replicaPorts := flag.Args()
 
+	// Create connection for each replica-port
 	for _, p := range replicaPorts {
 		conn, err := grpc.Dial(fmt.Sprintf(":%v", p), grpc.WithTransportCredentials(insecure.NewCredentials()))
 		if err != nil {
@@ -38,6 +40,7 @@ func main() {
 		replicaClients = append(replicaClients, auction.NewFrontendToServerClient(conn))
 	}
 
+	// Listen for client
 	lis, err := net.Listen("tcp", fmt.Sprintf(":%d", *port))
 
 	if err != nil {
@@ -55,10 +58,10 @@ func main() {
 		log.Fatalf("failed to server %v", err)
 	}
 }
-
 func (c *Server) ClientNewAuction(ctx context.Context, in *auction.ClientNewAuctionRequest) (*auction.ClientNewAuctionReply, error) {
 	count++
 	var serverResponse *auction.FrontendNewAuctionReply
+	// For each replica, send request for a new auction
 	for i := range replicaClients {
 		go func(index int) {
 			ctx, cancel := context.WithCancel(context.Background())
@@ -70,6 +73,7 @@ func (c *Server) ClientNewAuction(ctx context.Context, in *auction.ClientNewAuct
 			cancel()
 		}(i)
 	}
+	// Listen from response from the replicas, the first response gets returned to the client
 	for {
 		if serverResponse != nil {
 			log.Println(serverResponse.Id)

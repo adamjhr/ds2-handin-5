@@ -24,6 +24,7 @@ var (
 func main() {
 	flag.Parse()
 
+	// Dial frontend
 	conn, err := grpc.Dial(fmt.Sprintf(":%v", *receiver), grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
 		log.Fatalf("Could not connect: %s", err)
@@ -41,6 +42,7 @@ func main() {
 
 	scanner := bufio.NewScanner(os.Stdin)
 
+	// Loop listening for console input
 	for {
 		if scanner.Scan() {
 			line := scanner.Text()
@@ -48,10 +50,12 @@ func main() {
 			if len(lineSplit) != 0 {
 				ctx, cancel := context.WithCancel(context.Background())
 				if lineSplit[0] == "bid" {
+					// convert bid-amount to number
 					bidAmount, errNum := strconv.Atoi(lineSplit[1])
 					if errNum != nil {
 						log.Println("Invalid bid amount")
 					}
+					// Send bid-request to frontend
 					reply, err := c.ClientBid(ctx, &auction.ClientBidRequest{Id: int32(*port), Amount: int32(bidAmount)})
 					if err != nil {
 						log.Println("Error: " + err.Error())
